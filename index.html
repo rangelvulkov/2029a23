@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay Calculator 2029A23</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); min-height: 100vh; overflow-x: hidden; }
+        .orange-glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 2px solid #fb923c; border-radius: 24px; box-shadow: 0 15px 35px rgba(251, 146, 60, 0.2); }
+        .input-orange { border: 1px solid #fdba74; background: #fffcf9; transition: all 0.2s; width: 100%; padding: 12px; border-radius: 12px; }
+        .input-orange:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.2); }
+        .btn-install { width: 100%; margin-top: 15px; padding: 12px; border: 2px solid #f97316; color: #f97316; border-radius: 12px; font-weight: bold; cursor: pointer; display: none; background: white; transition: 0.3s; }
+        .btn-install:hover { background: #fff7ed; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <main class="orange-glass w-full max-w-md p-8 relative">
+        <div class="flex items-center justify-center mb-8">
+            <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg">
+                <span style="font-family: 'Comfortaa';" class="text-xl font-bold">DP</span>
+            </div>
+            <h1 style="font-family: 'Comfortaa';" class="text-2xl font-bold text-orange-900">DualPay 2029A23</h1>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-orange-800 mb-1">СУМА ЗА ПЛАЩАНЕ</label>
+                <div class="flex">
+                    <input type="number" id="billAmount" class="input-orange rounded-r-none" placeholder="0.00">
+                    <select id="billCurrency" class="bg-orange-500 text-white p-3 rounded-r-xl font-bold border-none">
+                        <option value="BGN">BGN</option>
+                        <option value="EUR">EUR</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-orange-800 mb-1">ПЛАТЕНО (ЛВ)</label>
+                    <input type="number" id="paidBGN" class="input-orange" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-orange-800 mb-1">ПЛАТЕНО (€)</label>
+                    <input type="number" id="paidEUR" class="input-orange" placeholder="0.00">
+                </div>
+            </div>
+
+            <div id="resultBox" class="hidden p-5 rounded-xl text-center shadow-inner transition-all duration-300">
+                <p id="resultLabel" class="text-xs uppercase tracking-widest font-bold mb-1"></p>
+                <p id="mainChange" class="text-3xl font-black"></p>
+                <p id="subChange" class="text-sm font-medium mt-1 opacity-90"></p>
+            </div>
+
+            <button id="installBtn" class="btn-install">📥 ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО</button>
+        </div>
+
+        <footer class="mt-10 pt-5 border-t border-orange-200 text-center">
+            <p class="text-orange-900 text-lg font-bold">© Рангел Вълков</p>
+            <p class="text-orange-500 text-xs mt-1 font-semibold uppercase tracking-tighter">Курс: 1 EUR = 1.95583 BGN</p>
+        </footer>
+    </main>
+
+    <script>
+        const RATE = 1.95583;
+        const inputs = ['billAmount', 'paidBGN', 'paidEUR', 'billCurrency'];
+        
+        function calculate() {
+            const bill = parseFloat(document.getElementById('billAmount').value) || 0;
+            const currency = document.getElementById('billCurrency').value;
+            const pBGN = parseFloat(document.getElementById('paidBGN').value) || 0;
+            const pEUR = parseFloat(document.getElementById('paidEUR').value) || 0;
+            
+            const totalBillBGN = currency === 'BGN' ? bill : bill * RATE;
+            const totalPaidBGN = pBGN + (pEUR * RATE);
+            const changeBGN = totalPaidBGN - totalBillBGN;
+            
+            const resBox = document.getElementById('resultBox');
+            if (bill > 0 && (pBGN > 0 || pEUR > 0)) {
+                resBox.classList.remove('hidden');
+                const isShort = changeBGN < -0.01;
+                
+                if (isShort) {
+                    resBox.className = 'p-5 rounded-xl text-center bg-red-500 text-white block';
+                    document.getElementById('resultLabel').innerText = 'Недостигат (в EUR):';
+                } else {
+                    resBox.className = 'p-5 rounded-xl text-center bg-green-500 text-white block';
+                    document.getElementById('resultLabel').innerText = 'Ресто (в EUR):';
+                }
+                
+                const changeInEUR = Math.abs(changeBGN / RATE);
+                document.getElementById('mainChange').innerText = changeInEUR.toFixed(2) + ' €';
+                document.getElementById('subChange').innerText = 'Еквивалент: ' + Math.abs(changeBGN).toFixed(2) + ' лв.';
+            } else {
+                resBox.classList.add('hidden');
+            }
+        }
+
+        inputs.forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+        // Логика за PWA инсталиране
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+    </script>
+</body>
+</html>
