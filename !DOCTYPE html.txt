@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<index.html>
 <html lang="bg">
 <head>
     <meta charset="UTF-8">
@@ -62,7 +62,7 @@
 
         <footer class="mt-8 text-center text-[10px] text-gray-500">
             <p>Курс: 1 EUR = 1.95583 BGN</p>
-            <p class="mt-1">© [ТВОЕТО ИМЕ]</p>
+            <p class="mt-1">© [Рангел]</p>
         </footer>
     </main>
 
@@ -124,4 +124,5 @@
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register(workerUrl); }
     </script>
 </body>
+
 </html>
